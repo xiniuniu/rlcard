@@ -6,7 +6,7 @@ import collections
 from itertools import combinations
 from bisect import bisect_left
 
-from rlcard.games.doudizhu.utils import CARD_TYPE, CARD_RANK_STR, CARD_RANK_STR_INDEX
+from rlcard.games.doudizhu.utils import CARD_RANK_STR, CARD_RANK_STR_INDEX
 from rlcard.games.doudizhu.utils import cards2str, contains_cards
 
 
@@ -21,7 +21,7 @@ class DoudizhuJudger(object):
         Args:
             indexes_list: the indexes of cards those have the same count, the count could be 1, 2, or 3.
 
-        Returns: 
+        Returns:
             list of tuples: [(start_index1, length1), (start_index1, length1), ...]
 
         '''
@@ -49,14 +49,14 @@ class DoudizhuJudger(object):
         ''' Find solo attachments for trio_chain_solo_x and four_two_solo
 
         Args:
-            hands: 
+            hands:
             chain_start: the index of start card of the trio_chain or trio or four
             chain_length: the size of the sequence of the chain, 1 for trio_solo or four_two_solo
             size: count of solos for the attachments
 
-        Returns: 
+        Returns:
             list of tuples: [attachment1, attachment2, ...]
-                            Each attachment has two elemnts, 
+                            Each attachment has two elemnts,
                             the first one contains indexes of attached cards smaller than the index of chain_start,
                             the first one contains indexes of attached cards larger than the index of chain_start
         '''
@@ -93,20 +93,20 @@ class DoudizhuJudger(object):
         ''' Find pair attachments for trio_chain_pair_x and four_two_pair
 
         Args:
-            cards_count: 
+            cards_count:
             chain_start: the index of start card of the trio_chain or trio or four
             chain_length: the size of the sequence of the chain, 1 for trio_pair or four_two_pair
             size: count of pairs for the attachments
 
-        Returns: 
+        Returns:
             list of tuples: [attachment1, attachment2, ...]
-                            Each attachment has two elemnts, 
+                            Each attachment has two elemnts,
                             the first one contains indexes of attached cards smaller than the index of chain_start,
                             the first one contains indexes of attached cards larger than the index of chain_start
         '''
         attachments = set()
         candidates = []
-        for i in range(len(cards_count)):
+        for i, _ in enumerate(cards_count):
             if (i >= chain_start and i < chain_start + chain_length):
                 continue
             if (cards_count[i] == 2 or cards_count[i] == 3):
@@ -165,7 +165,7 @@ class DoudizhuJudger(object):
                 playable_cards.add(pre_attached + cards + post_attached)
 
         #solo_chain_5 -- #solo_chain_12
-        solo_chain_indexes = DoudizhuJudger.chain_indexes(non_zero_indexes)            
+        solo_chain_indexes = DoudizhuJudger.chain_indexes(non_zero_indexes)
         for (start_index, length) in solo_chain_indexes:
             s, l = start_index, length
             while(l >= 5):
@@ -197,7 +197,7 @@ class DoudizhuJudger(object):
                         playable_cards.add(cards)
                 l -= 1
                 s += 1
-        
+
         #trio, trio_solo and trio_pair
         for i in more_than_2_indexes:
             playable_cards.add(CARD_RANK_STR[i[0]] * 3)
@@ -228,7 +228,7 @@ class DoudizhuJudger(object):
                     #trio_chain_2 to trio_chain_6
                     if (curr_length >= 2 and curr_length <= 6):
                         playable_cards.add(cards)
-                    
+
                     #trio_solo_chain_2 to trio_solo_chain_5
                     if (curr_length >= 2 and curr_length <= 5):
                         for left, right in DoudizhuJudger.solo_attachments(current_hand, s, curr_length, curr_length):
@@ -239,7 +239,7 @@ class DoudizhuJudger(object):
                             for j in right:
                                 post_attached += CARD_RANK_STR[j]
                             playable_cards.add(pre_attached + cards + post_attached)
-                    
+
                     #trio_pair_chain2 -- trio_pair_chain_4
                     if (curr_length >= 2 and curr_length <= 4):
                         for left, right in DoudizhuJudger.pair_attachments(cards_count, s, curr_length, curr_length):
@@ -257,10 +257,9 @@ class DoudizhuJudger(object):
             playable_cards.add(CARD_RANK_STR[13] + CARD_RANK_STR[14])
         return playable_cards
 
-    def __init__(self, players):
+    def __init__(self, players, np_random):
         ''' Initilize the Judger class for Dou Dizhu
         '''
-        all_cards_list = CARD_TYPE[1]
         self.playable_cards = [set() for _ in range(3)]
         self._recorded_removed_playable_cards = [[] for _ in range(3)]
         for player in players:
@@ -310,13 +309,12 @@ class DoudizhuJudger(object):
 
     def restore_playable_cards(self, player_id):
         ''' restore playable_cards for judger for game.step_back().
-            
+
         Args:
             player_id: The id of the player whose playable_cards need to be restored
         '''
         removed_playable_cards = self._recorded_removed_playable_cards[player_id].pop()
         self.playable_cards[player_id].update(removed_playable_cards)
-            
 
     def get_playable_cards(self, player):
         ''' Provide all legal cards the player can play according to his

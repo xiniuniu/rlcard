@@ -102,7 +102,7 @@ class TestDoudizhuGame(unittest.TestCase):
         game.state['actions'].sort()
         #actions should be the same after step_back()
         self.assertEqual(game.state['actions'], actions)
-        
+
         #case 3: action, pass, pass, action, stepback
         game = Game(allow_step_back=True)
         state, player_id = game.init_game()
@@ -137,7 +137,7 @@ class TestDoudizhuGame(unittest.TestCase):
         probs = np.zeros(309)
         probs[-1] = 0.5
         legal_actions = ['pass', '33344', 'BR']
-        action = get_optimal_action(probs, legal_actions)
+        action = get_optimal_action(probs, legal_actions, np.random.RandomState())
         self.assertEqual(action, 'pass')
 
     def test_encode_cards(self):
